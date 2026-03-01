@@ -48,3 +48,4 @@ resource "aws_flow_log" "this" {
 
 //flow logs helps in determining port scanning,sus outbound traffic, data exfiltration, misconfig, Lateral movement (Gains access to one system… then moves sideways inside the network to compromise more systems.)
 //for advance features send logs to elk for better analysis, send logs to s3, use athena for quering
+//Amazon GuardDuty can detect suspicious lateral movement patterns.

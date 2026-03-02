@@ -8,3 +8,9 @@ Security measures
     AWS Config rules to detect open SGs
     SCPs in Organizations to prevent public DB
     Automated scanning via CI
+
+3) IAM
+    Limit maximum permissions a role can ever have. (Even if someone attaches AdministratorAccess,boundary prevents escalation.)
+    SCPs restrict accounts at org level.(example deny deleting CloudTrail)
+    Conditional Policies
+    Tag-Based Access Control

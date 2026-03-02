@@ -14,3 +14,10 @@ Security measures
     SCPs restrict accounts at org level.(example deny deleting CloudTrail)
     Conditional Policies
     Tag-Based Access Control
+
+4) EC2
+    IMDSv2 prevents credential theft
+    IAM least privilege limits damage
+    Encrypted EBS protects snapshots
+    CloudTrail logs API actions
+    GuardDuty alerts anomalies

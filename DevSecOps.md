@@ -21,3 +21,20 @@ Security measures
     Encrypted EBS protects snapshots
     CloudTrail logs API actions
     GuardDuty alerts anomalies
+
+5) EKS
+        KMS -> IAM controls Decryption
+            -> CloudTrail Logs every Decrypt
+            -> If KMS is disabled or deleted cluster cannot decrypt -> pods cannot access secret
+            -> Restrict KMS key to specific resource
+   EKS in private subnets
+   Nodes in private subnets
+   No public IP
+   NAT Gateway for outbound
+   VPC endpoints for
+        -> ECR
+        -> S3
+        -> STS
+        -> CloudWatch
+        -> SSM
+   This removes public internet dependency

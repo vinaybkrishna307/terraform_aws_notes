@@ -154,3 +154,153 @@ Focus: RTO focuses on the speed of recovery, while RPO focuses on the amount of 
 Purpose: RTO drives the recovery strategy, while RPO drives backup frequency.
 
 */
+
+
+################################################
+/*So, while creating a KMS key for RDS, we will write trust policy in RDS
+ saying RDS can make use of or have access to KMS keys. And we will also create another
+ policy saying that I will trust RDS with this KMS key.*/
+//RDS snapshot export requires SSE-KMS.
+resource "aws_kms_key" "rds_export_key" {
+  description             = "KMS key for RDS snapshot export to S3"
+  deletion_window_in_days = 7
+  enable_key_rotation     = true
+}
+
+resource "aws_iam_role" "rds_export_role" {
+  name = "rds-snapshot-export-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          Service = "rds.amazonaws.com"
+        },
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+
+//Restrict to Specific S3 Prefix
+/*
+Bucket name: my-backup-bucket
+Allowed prefix: rds-exports/
+*/
+resource "aws_iam_policy" "rds_export_policy" {
+  name = "rds-export-to-s3-policy"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+
+      # Allow writing only to specific prefix
+      {
+        Effect = "Allow",
+        Action = [
+          "s3:PutObject",
+          "s3:AbortMultipartUpload"
+        ],
+        Resource = "arn:aws:s3:::my-backup-bucket/rds-exports/*"
+      },
+
+      # Allow listing bucket (restricted)
+      {
+        Effect = "Allow",
+        Action = [
+          "s3:ListBucket"
+        ],
+        Resource = "arn:aws:s3:::my-backup-bucket",
+        Condition = {
+          StringLike = {
+            "s3:prefix" = "rds-exports/*"
+          }
+        }
+      },
+
+      # Allow using KMS key
+      {
+        Effect = "Allow",
+        Action = [
+          "kms:Encrypt",
+          "kms:GenerateDataKey"
+        ],
+        Resource = aws_kms_key.rds_export_key.arn
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "attach_rds_export" {
+  role       = aws_iam_role.rds_export_role.name
+  policy_arn = aws_iam_policy.rds_export_policy.arn
+}
+
+
+//Bucket Policy – Enforce Encryption + Restrict Role
+/*
+{
+  "Version": "2012-10-17",
+  "Statement": [
+
+    {
+      "Sid": "AllowRDSExportRoleOnly",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::123456789012:role/rds-snapshot-export-role"
+      },
+      "Action": "s3:PutObject",
+      "Resource": "arn:aws:s3:::my-backup-bucket/rds-exports/*"
+    },
+
+    {
+      "Sid": "DenyUnEncryptedUploads",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "s3:PutObject",
+      "Resource": "arn:aws:s3:::my-backup-bucket/rds-exports/*",
+      "Condition": {
+        "StringNotEquals": {
+          "s3:x-amz-server-side-encryption": "aws:kms"
+        }
+      }
+    }
+  ]
+}
+*/
+
+resource "aws_kms_key_policy" "rds_kms_policy" {
+  key_id = aws_kms_key.rds_export_key.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid = "AllowRDSService",
+        Effect = "Allow",
+        Principal = {
+          Service = "rds.amazonaws.com"
+        },
+        Action = [
+          "kms:Encrypt",
+          "kms:GenerateDataKey"
+        ],
+        Resource = "*"
+      }
+    ]
+  })
+}//forget this → export fails.
+
+/*
+
+aws rds start-export-task \
+  --export-task-identifier my-export-task \
+  --source-arn arn:aws:rds:region:account-id:snapshot:snapshot-id \
+  --s3-bucket-name my-backup-bucket \
+  --iam-role-arn arn:aws:iam::123456789012:role/rds-snapshot-export-role \
+  --kms-key-id arn:aws:kms:region:account-id:key/key-id
+
+*/

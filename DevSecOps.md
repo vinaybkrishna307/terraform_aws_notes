@@ -38,3 +38,11 @@ Security measures
         -> CloudWatch
         -> SSM
    This removes public internet dependency
+
+6) S3
+   Bucket Policy Deny Insecure Transport
+   Deny Unencrypted Uploads
+   Least Privilege IAM (No s3:* permissions.)
+   Enable CloudTrail Data Events for S3 (Compliance)
+   Enable AWS Config Rule (public read prohibited and server side encryption)
+   Enable GuardDuty(Anomalous S3 access)

@@ -46,3 +46,6 @@ Security measures
    Enable CloudTrail Data Events for S3 (Compliance)
    Enable AWS Config Rule (public read prohibited and server side encryption)
    Enable GuardDuty(Anomalous S3 access)
+
+7) Transit Gateway
+   Central Inspection Pattern (security vpc + firewall like palo alto -> force all traffics between vpcs to pass through it )

@@ -43,3 +43,23 @@ resource "aws_security_group_rule" "app_to_db" {
 
   description = "Allow application tier to access database"
 }
+
+/*
+| Layer           | Protection       |
+| --------------- | ---------------- |
+| WAF             | L7 filtering     |
+| Security Groups | L3/L4 filtering  |
+| NGINX           | Rate limiting    |
+| Kubernetes      | NetworkPolicies  |
+| App             | Input validation |
+*/
+
+/*
+| Layer      | Responsibility          |
+| ---------- | ----------------------- |
+| CloudFront | CDN + edge security     |
+| WAF        | Block SQLi, XSS, bots   |
+| ALB        | AWS entry load balancer |
+| NGINX      | Kubernetes routing      |
+| Service    | Pod load balancing      |
+*/

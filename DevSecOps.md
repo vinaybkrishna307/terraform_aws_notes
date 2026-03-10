@@ -3,11 +3,23 @@ Security measures
 1) VPC
 
 2) Security groups
-
     GuardDuty for threat detection
     AWS Config rules to detect open SGs
     SCPs in Organizations to prevent public DB
     Automated scanning via CI
+    CloudFront protections :
+       AWS Shield
+       Rate limiting
+       Bot control
+       Geo blocking
+    WAF rules :
+       AWSManagedRulesCommonRuleSet
+       AWSManagedRulesSQLiRuleSet
+       AWSManagedRulesAmazonIpReputationList
+    Kubernetes protections :
+       NetworkPolicy
+       PodSecurityStandards
+       mTLS (Istio or Linkerd)
 
 3) IAM
     Limit maximum permissions a role can ever have. (Even if someone attaches AdministratorAccess,boundary prevents escalation.)
